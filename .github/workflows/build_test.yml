@@ -1,0 +1,39 @@
+name: Build Test
+on:
+  push:
+    branches:
+    - 'main'
+  pull_request:
+    branches:
+    - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {cuda_version: '12.5.0', os: 'ubuntu-20.04'}
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        token: ${{ secrets.ACCESS_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: Jimver/cuda-toolkit@master
+      id: cuda-toolkit
+      with:
+        cuda: '${{matrix.config.cuda_version}}'
+        log-file-suffix: '${{matrix.config.os}}.txt'
+    - name: Install Dependencies
+      working-directory: 
+      run: |
+        apt update
+        apt install -y libeigen3-dev git git-lfs cmake gcc libyaml-cpp-dev python3-pil
+      shell: bash
+    - name: Build Test
+      working-directory: 
+      run: |
+        mkdir -p $HOME/build;
+        cd $HOME/build
+        cmake ..
